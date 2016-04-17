@@ -11,7 +11,7 @@ export default class App extends React.Component {
       INODE_ARRAY_SIZE: 30,
       BLOCK_SIZE: 4,
       SINGE_INDIRECT_ENTRIES: 512,
-      FILE_DATA: 40,
+      FILE_DATA: 90,
     };
     this.FS = new FS(this.params);
     this.FS.addFileToDir('kushan', 'this contains awesomeness', 2);
@@ -21,6 +21,7 @@ export default class App extends React.Component {
     console: [],
     value: '',
   }
+  oldDir = [];
 
   currentDir = 2;
 
@@ -127,7 +128,22 @@ export default class App extends React.Component {
         }
         const newDir = this.FS.mkdir(input[1], this.currentDir);
         this.addItemToState('new Dir added', command, newDir);
-
+      } else if (input[0] === 'cd') {
+        if (!input[1]) {
+          alert('Please input name of dir name or ..');
+          return;
+        }
+        if (input[1] === '..') {
+          this.currentDir = this.oldDir.pop();
+        } else {
+          let newNode = this.FS.getInodeOfFileInDir(this.currentDir, input[1])[0].inode;
+          newNode = this.FS.disk[this.FS.iNtoD(newNode)];
+          this.oldDir.push(this.currentDir);
+          this.currentDir = newNode.index;
+          console.log(this.currentDir);
+          this.addItemToState('changed current dir', command, newNode);
+          return;
+        }
       }
     }
   }
