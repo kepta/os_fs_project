@@ -15,7 +15,7 @@ const gParams = {
 };
 
 function getDataIndex(params, i) {
-  return 2 + params.INODE_ARRAY_SIZE + i;
+  return 2 + params.INODE_ARRAY_SIZE + i + params.BLOCK_SIZE;
 }
 
 describe('<Home />', () => {
@@ -25,7 +25,7 @@ describe('<Home />', () => {
   });
   it('should have block 1 as super block', () => {
     const fs = new FS(gParams);
-    expect(fs.disk[1].diskBlocks).to.equal(0);
+    expect(fs.disk[1].diskBlocks).to.equal(1);
     expect(fs.disk[1].inodes).to.equal(2);
   });
   it('should have block 2 as n1 which should be null', () => {
@@ -55,9 +55,10 @@ describe('<Home />', () => {
     const fs = new FS(gParams);
     fs.createFile('Shub');
     fs.createFile('Kushan');
-    fs.createFile('Sahil')
+    fs.createFile('Sahil');
+
     // console.log(fs.disk[2+gParams.INODE_ARRAY_SIZE]);
-    expect(fs.disk[getDataIndex(gParams,5)].data).to.equal('Sa');
+    expect(fs.disk[getDataIndex(gParams, 5 + fs.getBlocks(2))].data).to.equal('Sa');
   });
 
 
@@ -73,7 +74,7 @@ describe('<Home />', () => {
       FILE_DATA: 6,
     };
     const fs = new FS(params);
-    fs.createFile('kushan');
+    const in1 = fs.createFile('kushan');
     expect(fs.disk[getDataIndex(params, 0)].data).to.equal('kus');
 
     fs.createFile('shubham');
@@ -86,11 +87,22 @@ describe('<Home />', () => {
     fs.editFile(3, 'ku');
     fs.createFile('muchhala');
     expect(fs.disk[getDataIndex(params, 0)].data).to.equal('hha');
-    expect(fs.readFile(3)).to.equal('ku');
+    expect(fs.readFile(in1.index)).to.equal('ku');
     expect(fs.readFile(4)).to.equal('khu');
     expect(fs.readFile(5)).to.equal('sha');
     expect(fs.readFile(6)).to.equal('muchhala');
   });
 
-
+  it('directory creating', () => {
+    const params = {
+      NO_INODE_REFS: 8,
+      INODE_ARRAY_SIZE: 8,
+      BLOCK_SIZE: 4,
+      SINGE_INDIRECT_ENTRIES: 512,
+      FILE_DATA: 30,
+    };
+    const fs = new FS(params);
+    const rootInode = fs.mkdir('root');
+    fs.addFileToDir('kushan', 'this contains awesomeness', rootInode.index);
+  });
 });

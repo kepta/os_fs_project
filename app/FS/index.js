@@ -64,6 +64,7 @@ export default class Disk {
     this.disk[INODE_OFFSET + 1] = null; // start of Inode N1 is null
     this.superBlock.inodes++;
     this.addInode(ROOT_INODE_ATTR);
+    this.editFile(2, '[]'); // create an empty table for root directory table
   }
 
   addInode = (attr) => {
@@ -96,6 +97,9 @@ export default class Disk {
 
   getFreeBlock = () => {
     this.superBlock.diskBlocks++;
+    if (this.superBlock.freeBlocks.length === 0) {
+      throw new Error('no free blocks availale, disk FULLL!!')
+    }
     return this.superBlock.freeBlocks.shift();
   }
 
@@ -108,11 +112,13 @@ export default class Disk {
     return;
   }
 
-  createFile(data) {
+  createFile(data, attr = [0, 'file', 'Yesterday', 'Monday']) {
     let dataLeft = data;
-    const inode = this.addInode([0, 'Yesterday', 'Monday']);
+    const inode = this.addInode(attr);
     let flag = true;
+    let count = 0;
     while (flag) {
+      count++;
       const freeBlock = this.getFreeBlock();
       dataLeft = this.disk[freeBlock].insert(dataLeft);
       inode.addRef(freeBlock);
@@ -120,6 +126,7 @@ export default class Disk {
         flag = false;
       }
     }
+    inode.setAttr([count*this.params.BLOCK_SIZE].concat(attr.slice(1)));
     return inode;
   }
 
@@ -129,7 +136,9 @@ export default class Disk {
       this.disk[e].empty();
     });
   }
-
+  getBlocks = (iNode) => {
+    return this.disk[this.iNtoD(iNode)].getAttr()[0];
+  }
   editFile = (iNode, data) => {
     this.releaseAllRefs(iNode);
     const inode = this.disk[this.iNtoD(iNode)];
@@ -160,22 +169,53 @@ export default class Disk {
     }).join('');
   }
 
-  mkdir(name) {
-    const dirStruct = [name];
-    let dataLeft = JSON.stringify(dirStruct);
-      createFile(data)
-    const inode = this.addInode([0, 'Yesterday', 'Monday']);
-    let flag = true;
-    while (flag) {
-      const freeBlock = this.getFreeBlock();
-      dataLeft = this.disk[freeBlock].insert(dataLeft);
-      inode.addRef(freeBlock);
-      if (!dataLeft) {
-        flag = false;
-      }
+  mkdir(name, parentInode) {
+    const dirStruct = [];
+    const dataLeft = JSON.stringify(dirStruct);
+    return this.addFileToDir(name, dataLeft, parentInode, [0, 'dir', 'Yesterday', 'Monday']);
+  }
+
+  addFileToDir(fileName, fileData, dirInode, attr) {
+    let dirTable = JSON.parse(this.readFile(dirInode));
+    const fileInode = this.createFile(fileData, attr);
+    dirTable.push({ inode: fileInode.index, fileName });
+    dirTable = JSON.stringify(dirTable);
+    this.editFile(dirInode, dirTable);
+    return fileInode;
+  }
+
+  rmFileFromDir(fileName, dirInode) {
+    let dirTable = JSON.parse(this.readFile(dirInode));
+    const found = dirTable.filter(e => {
+      return e.fileName === fileName;
+    });
+    console.log(found);
+    if (found.length === 0) {
+      return;
+    } else {
+      this.deleteFile(found[0].inode);
+      const remaining = dirTable.filter(e => {
+        return e.fileName !== fileName;
+      });
+      console.log(remaining);
+      dirTable = JSON.stringify(remaining);
+      this.editFile(dirInode, dirTable);
+      return;
     }
   }
 
+  ls(dirInode) {
+    return JSON.parse(this.readFile(dirInode)).map(e => {
+      return e.fileName;
+    });
+  }
+
+  getInodeOfFileInDir(dirInode, fileName) {
+    console.log(dirInode, fileName);
+    return JSON.parse(this.readFile(dirInode)).filter(e => {
+      return e.fileName === fileName;
+    });
+  }
   deleteFile(inode) {
     this.disk[1+inode] = null;
   }

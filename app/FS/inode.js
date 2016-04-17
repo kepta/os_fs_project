@@ -20,7 +20,12 @@ export default class Inode {
   getIndex(i) {
     return this.refs[i];
   }
-
+  setAttr = (attr) => {
+    this.attr = attr;
+  }
+  getAttr = () => {
+    return this.attr;
+  }
   addRef(ptr) {
     if (this.length === this.NO_INODE_REFS - 1) { // should be 8
       this.refs[this.length] = new SingleIndirect(this.params);

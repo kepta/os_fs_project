@@ -1,5 +1,5 @@
 import './bootstrap/css/bootstrap.min.css';
-import './main.css';
+// import './main.css';
 import './inspector.css';
 
 import React from 'react';
