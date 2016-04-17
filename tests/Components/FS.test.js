@@ -17,6 +17,7 @@ const gParams = {
 function getDataIndex(params, i) {
   return 2 + params.INODE_ARRAY_SIZE + i;
 }
+
 describe('<Home />', () => {
   it('should have block 0 should be null', () => {
     const fs = new FS(gParams);
@@ -50,6 +51,18 @@ describe('<Home />', () => {
     fs.createFile('Kushan joshi');
     expect(fs.disk[1].diskBlocks).to.be.above(0);
   });
+  it('should fill up all the blocks', () => {
+    const fs = new FS(gParams);
+    fs.createFile('Shub');
+    fs.createFile('Kushan');
+    fs.createFile('Sahil')
+    // console.log(fs.disk[2+gParams.INODE_ARRAY_SIZE]);
+    expect(fs.disk[getDataIndex(gParams,5)].data).to.equal('Sa');
+  });
+
+
+
+
 
   it('test editing', () => {
     const params = {
