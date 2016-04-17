@@ -52,7 +52,7 @@ const common = {
 
 if (TARGET === 'start' || !TARGET) {
   module.exports = merge(common, {
-    devtool: 'cheap-module-eval-source-map',
+    devtool: 'eval-source-map',
     devServer: {
 
       historyApiFallback: true,
