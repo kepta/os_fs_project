@@ -1,8 +1,10 @@
-import { SINGE_INDIRECT_REFS } from './';
+// import { SINGE_INDIRECT_ENTRIES } from './';
 
 export default class SingleIndirect {
-  constructor() {
-    this.refs = new Array(SINGE_INDIRECT_REFS);
+  constructor(params) {
+    // console.log(params);
+    this.SINGE_INDIRECT_ENTRIES = params.SINGE_INDIRECT_ENTRIES;
+    this.refs = new Array(this.SINGE_INDIRECT_ENTRIES);
     this.length = 0;
 
     this.getAllRefs = this.getAllRefs.bind(this);
@@ -20,7 +22,7 @@ export default class SingleIndirect {
   }
 
   addRef(ptr) {
-    if (this.length + 1>= SINGE_INDIRECT_REFS) {
+    if (this.length + 1>= this.SINGE_INDIRECT_ENTRIES) {
       throw new Error('error max length of SingleIndirect');
     }
     this.refs[this.length++] = ptr;

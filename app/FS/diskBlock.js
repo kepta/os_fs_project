@@ -1,17 +1,20 @@
-import { BLOCK_SIZE } from './';
+// import { BLOCK_SIZE } from './';
 
 export default class DiskBlock {
-  constructor(index) {
+  constructor(index, params) {
     this.data = null;
     this.index = index;
+    this.BLOCK_SIZE = params.BLOCK_SIZE;
   }
   insert(data) {
-    if (data.length > BLOCK_SIZE - 1) {
-      this.data = data.slice(0, BLOCK_SIZE);
-      return data.slice(BLOCK_SIZE, data.length);
+    if (data.length > this.BLOCK_SIZE - 1) {
+      this.data = data.slice(0, this.BLOCK_SIZE);
+      return data.slice(this.BLOCK_SIZE, data.length);
     }
     this.data = data.slice(0, data.length);
     return false;
   }
-
+  empty = () => {
+    this.data = null;
+  }
 }
