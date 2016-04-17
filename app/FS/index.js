@@ -120,6 +120,7 @@ export default class Disk {
         flag = false;
       }
     }
+    return inode;
   }
 
   releaseAllRefs = (iNode) => {
@@ -155,8 +156,24 @@ export default class Disk {
 
   readFile(inode) {
     return this.disk[this.iNtoD(inode)].getAllRefs().map((e) => {
-      return this.disk[e];
-    });
+      return this.disk[e].data;
+    }).join('');
+  }
+
+  mkdir(name) {
+    const dirStruct = [name];
+    let dataLeft = JSON.stringify(dirStruct);
+      createFile(data)
+    const inode = this.addInode([0, 'Yesterday', 'Monday']);
+    let flag = true;
+    while (flag) {
+      const freeBlock = this.getFreeBlock();
+      dataLeft = this.disk[freeBlock].insert(dataLeft);
+      inode.addRef(freeBlock);
+      if (!dataLeft) {
+        flag = false;
+      }
+    }
   }
 
   deleteFile(inode) {
